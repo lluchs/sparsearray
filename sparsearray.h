@@ -1,4 +1,5 @@
 #pragma once
+#include <cassert>
 
 template<typename T, size_t N>
 class BitmapSA
@@ -247,6 +248,9 @@ done:
 		assert(el >= &array[0] && el < &array[N]);
 		assert(el->used);
 		el->used = false;
+
+		if (el == firstUsed)
+			firstUsed = el->next;
 		
 		if (firstFree)
 		{
@@ -269,13 +273,15 @@ done:
 	template<typename Ti, typename SA = LinkedListSA>
 	class Iterator : public std::iterator<std::forward_iterator_tag, Ti>
 	{
-		ListElement *el;
+		// We need to save the next element explicitly to allow deletion during iteration.
+		ListElement *el, *next;
 	public:
-		Iterator(SA *array) : el(array ? array->firstUsed : nullptr) { }
+		Iterator(SA *array) : el(array ? array->firstUsed : nullptr), next(el ? el->next : nullptr) { }
 
 		Iterator& operator++()
 		{
-			el = el->next;
+			el = next;
+			next = el ? el->next : nullptr;
 			return *this;
 		}
 
