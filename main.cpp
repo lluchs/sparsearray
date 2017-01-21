@@ -39,19 +39,19 @@ int benchmark(int iterations, uint64_t seed)
 			}
 		}
 		// walk through the array and do stuff
-		for (auto pxs : array)
+		for (auto& pxs : array)
 		{
-			pxs->x += pxs->xdir; pxs->y += pxs->ydir;
-			if (std::abs(pxs->x + pxs->y) > 10000)
+			pxs.x += pxs.xdir; pxs.y += pxs.ydir;
+			if (std::abs(pxs.x + pxs.y) > 10000)
 			{
-				pxs->Mat = C4PXS::MNone;
-				array.Delete(&*pxs);
+				pxs.Mat = C4PXS::MNone;
+				array.Delete(&pxs);
 			}
 		}
 	}
 
-	for (auto pxs : array)
-		sum += pxs->x + pxs->y;
+	for (auto& pxs : array)
+		sum += pxs.x + pxs.y;
 	return sum;
 }
 

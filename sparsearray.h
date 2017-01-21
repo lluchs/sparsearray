@@ -41,20 +41,26 @@ public:
 		size_t el, pos; // el: current element in data, pos: current bit position in cur
 		uint64_t cur;
 	public:
-		Iterator(SA *array) : array(array), el(0), pos(64), cur(0) { }
+		Iterator(SA *array) : array(array), el(0), pos(65), cur(0)
+		{
+			if (array)
+				operator++();
+		}
 
 		Iterator& operator++()
 		{
-			while (!cur && el < N)
+			assert(array);
+			while (!cur)
 			{
 				el += 64 - pos;
+				if (el >= N) break;
 				pos = 0;
 				cur = array->mask[el / 64];
 			}
-			size_t inc = __builtin_ffsll(cur) - 1;
+			size_t inc = __builtin_ffsll(cur);
 			el += inc;
-			pos += inc + 1;
-			cur >>= inc + 1;
+			pos += inc;
+			cur >>= inc;
 			if (el >= N)
 			{
 				array = nullptr;
@@ -65,7 +71,7 @@ public:
 
 		bool operator==(Iterator other) { return array == other.array && el == other.el; }
 		bool operator!=(Iterator other) { return !(*this == other); }
-		Ti* operator*() const { return &array->data[el]; }
+		Ti& operator*() const { assert(el < N); return array->data[el]; }
 	};
 
 	Iterator<T> begin() { return Iterator<T>(this); }
@@ -180,7 +186,7 @@ public:
 
 		bool operator==(Iterator other) { return array == other.array && i == other.i && j == other.j; }
 		bool operator!=(Iterator other) { return !(*this == other); }
-		Ti* operator*() const { return &array->Chunk[i][j]; }
+		Ti& operator*() const { return array->Chunk[i][j]; }
 	};
 
 	Iterator<T> begin() { return Iterator<T>(this); }
@@ -287,7 +293,7 @@ done:
 
 		bool operator==(Iterator other) { return el == other.el; }
 		bool operator!=(Iterator other) { return !(*this == other); }
-		Ti* operator*() const { return &el->data; }
+		Ti& operator*() const { return el->data; }
 	};
 
 	Iterator<T> begin() { return Iterator<T>(this); }
