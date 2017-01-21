@@ -34,6 +34,7 @@ int benchmark(int iterations, uint64_t seed)
 			if (npxs)
 			{
 				npxs->Mat = 1;
+				npxs->x = 0; npxs->y = 0;
 				npxs->xdir = (int) (rand() % 100) - 50;
 				npxs->ydir = (int) (rand() % 100) - 50;
 			}
