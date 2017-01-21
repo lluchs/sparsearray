@@ -20,7 +20,7 @@ public:
 				size_t j = __builtin_ffsll(m) - 1;
 				size_t idx = i*64 + j;
 				if (idx >= N) return nullptr;
-				mask[i] |= 1 << j;
+				mask[i] |= (uint64_t) 1 << j;
 				return &data[idx];
 			}
 		}
@@ -32,7 +32,7 @@ public:
 		size_t idx = el - data;
 		assert(idx < N);
 		size_t i = idx / 64, j = idx % 64;
-		mask[i] &= ~(1 << j);
+		mask[i] &= ~((uint64_t) 1 << j);
 	}
 
 	template<typename Ti, typename SA = BitmapSA>
@@ -58,7 +58,7 @@ public:
 				el += 64 - pos;
 				if (el >= N) break;
 				pos = 0;
-				cur = array->mask[el / 64];
+				cur = array->mask[(el + 1) / 64];
 			}
 			size_t inc = __builtin_ffsll(cur);
 			el += inc - start;
@@ -180,6 +180,7 @@ public:
 			// We're at the end.
 			array = nullptr;
 			i = j = 0;
+			return *this;
 		}
 	public:
 		Iterator(SA *array) : array(array), i(0), j(0)

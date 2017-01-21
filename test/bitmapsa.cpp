@@ -3,7 +3,10 @@
 
 TEST_CASE("BitmapSA: Basic actions", "[BitmapSA]")
 {
-    BitmapSA<int, 10> array;
+    // We need to test more than 64 to verify calculations with
+    // multiple mask elements.
+    constexpr int N = 100;
+    BitmapSA<int, N> array;
 
 #include "common.h"
 }

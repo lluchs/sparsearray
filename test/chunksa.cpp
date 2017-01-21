@@ -3,7 +3,8 @@
 
 TEST_CASE("ChunkSA: Basic actions", "[ChunkSA]")
 {
-    ChunkSA<int, 10, 2> array;
+    constexpr int N = 10;
+    ChunkSA<int, N, 2> array;
 
 #include "common.h"
 }

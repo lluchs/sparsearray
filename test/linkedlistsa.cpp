@@ -3,7 +3,8 @@
 
 TEST_CASE("LinkedListSA: Basic actions", "[LinkedListSA]")
 {
-    LinkedListSA<int, 10> array;
+    constexpr int N = 10;
+    LinkedListSA<int, N> array;
 
 #include "common.h"
 }

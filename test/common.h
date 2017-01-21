@@ -8,9 +8,10 @@ SECTION("should be initially empty")
 
 SECTION("filling should work")
 {
-	for (int i = 0; i < 10; i++)
+	for (int i = 0; i < N; i++)
 	{
 		int *el = array.New();
+		CAPTURE(i);
 		REQUIRE(el != nullptr);
 		*el = i;
 	}
@@ -25,7 +26,7 @@ SECTION("filling should work")
 		int i = 0;
 		for (int el : array)
 			CHECK(el == i++);
-		REQUIRE(i == 10);
+		REQUIRE(i == N);
 	}
 
 	SECTION("deletion should work")
@@ -45,7 +46,7 @@ SECTION("filling should work")
 				array.Delete(&el);
 			}
 		}
-		for (i = 0; i < 10; i += 2)
+		for (i = 0; i < N; i += 2)
 		{
 			*array.New() = i;
 		}
