@@ -1,5 +1,6 @@
 #pragma once
 #include <cassert>
+#include <bitset>
 
 template<typename T, size_t N>
 class BitmapSA
@@ -87,6 +88,7 @@ class ChunkSA
 	static constexpr size_t MaxChunk = N / ChunkSize;
 	T *Chunk[MaxChunk];
 	size_t ChunkFill[MaxChunk];
+	std::bitset<N> UsedElements;
 
 public:
 
@@ -122,8 +124,9 @@ public:
 			// Check this chunk for space.
 			if (ChunkFill[i] < ChunkSize)
 				for (size_t j = 0; j < ChunkSize; j++)
-					if (Chunk[i][j].IsNull())
+					if (!UsedElements[i*ChunkSize + j])
 					{
+						UsedElements.set(i*ChunkSize + j);
 						ChunkFill[i]++;
 						return &Chunk[i][j];
 					}
@@ -133,14 +136,16 @@ public:
 
 	void Delete(T *el)
 	{
-		assert(el->IsNull());
-		size_t i;
+		size_t i, j;
 		for (i = 0; i < MaxChunk; i++)
 			if (ChunkFill[i])
 				if (el > Chunk[i] && el < Chunk[i] + ChunkSize)
 					break;
 		if (i < MaxChunk)
 		{
+			j = el - &Chunk[i][0];
+			assert(UsedElements[i*ChunkSize + j]);
+			UsedElements.reset(i*ChunkSize + j);
 			if (--ChunkFill[i] == 0)
 				delete[] Chunk[i];
 			assert(ChunkFill[i] >= 0);
@@ -161,7 +166,7 @@ public:
 				{
 					for (; j < ChunkSize; j++)
 					{
-						if (array->Chunk[i][j].IsNull()) continue;
+						if (array->UsedElements[i + j]) continue;
 						if (return_next)
 							return *this;
 						return_next = true;
