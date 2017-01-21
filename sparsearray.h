@@ -39,13 +39,15 @@ public:
 	class Iterator : public std::iterator<std::forward_iterator_tag, Ti>
 	{
 		SA *array;
-		size_t el, pos; // el: current element in data, pos: current bit position in cur
+		size_t el, pos, start; // el: current element in data, pos: current bit position in cur
 		uint64_t cur;
 	public:
-		Iterator(SA *array) : array(array), el(0), pos(65), cur(0)
+		Iterator(SA *array) : array(array), el(0), pos(64), cur(0)
 		{
+			start = 1;
 			if (array)
 				operator++();
+			start = 0;
 		}
 
 		Iterator& operator++()
@@ -59,7 +61,7 @@ public:
 				cur = array->mask[el / 64];
 			}
 			size_t inc = __builtin_ffsll(cur);
-			el += inc;
+			el += inc - start;
 			pos += inc;
 			cur >>= inc;
 			if (el >= N)
@@ -139,16 +141,18 @@ public:
 		size_t i, j;
 		for (i = 0; i < MaxChunk; i++)
 			if (ChunkFill[i])
-				if (el > Chunk[i] && el < Chunk[i] + ChunkSize)
+				if (el >= &Chunk[i][0] && el < &Chunk[i][ChunkSize])
 					break;
-		if (i < MaxChunk)
+		assert(i < MaxChunk);
+
+		j = el - &Chunk[i][0];
+		assert(UsedElements[i*ChunkSize + j]);
+		UsedElements.reset(i*ChunkSize + j);
+
+		if (--ChunkFill[i] == 0)
 		{
-			j = el - &Chunk[i][0];
-			assert(UsedElements[i*ChunkSize + j]);
-			UsedElements.reset(i*ChunkSize + j);
-			if (--ChunkFill[i] == 0)
-				delete[] Chunk[i];
-			assert(ChunkFill[i] >= 0);
+			delete[] Chunk[i];
+			Chunk[i] = nullptr;
 		}
 	}
 
@@ -166,12 +170,12 @@ public:
 				{
 					for (; j < ChunkSize; j++)
 					{
-						if (array->UsedElements[i + j]) continue;
-						if (return_next)
+						if (array->UsedElements[i*ChunkSize + j] && return_next)
 							return *this;
 						return_next = true;
 					}
 				}
+				return_next = true;
 			}
 			// We're at the end.
 			array = nullptr;
@@ -203,6 +207,7 @@ public:
 template<typename T, size_t N>
 class LinkedListSA
 {
+protected: // for tests
 	struct ListElement
 	{
 		T data;
@@ -214,6 +219,13 @@ class LinkedListSA
 
 	ListElement array[N];
 	ListElement *firstUsed, *firstFree;
+	
+	/*void PrintList(ListElement *start)
+	{
+		for (auto it = start; it; it = it->next)
+			printf("%d -> ", it->data);
+		printf("nullptr\n");
+	}*/
 
 public:
 	LinkedListSA() : firstUsed(nullptr), firstFree(array)
@@ -236,7 +248,7 @@ public:
 		if (firstUsed)
 		{
 			ListElement *prevEl = el;
-			while (--prevEl > array)
+			while (--prevEl >= array)
 				if (prevEl->used)
 				{
 					el->next = prevEl->next;
@@ -244,7 +256,7 @@ public:
 					goto done;
 				}
 			// We're at the front.
-			el->next = firstUsed->next;
+			el->next = firstUsed;
 		}
 		else
 			el->next = nullptr;
@@ -260,25 +272,37 @@ done:
 		assert(el->used);
 		el->used = false;
 
+		ListElement *next = el->next;
+		bool lookingForUsed = false, lookingForFree = !!firstFree;
 		if (el == firstUsed)
-			firstUsed = el->next;
-		
-		if (firstFree)
-		{
-			ListElement *prevEl = el;
-			while (--prevEl > array)
-				if (!prevEl->used)
-				{
-					el->next = prevEl->next;
-					prevEl->next = el;
-					return;
-				}
-			// We're at the front.
-			el->next = firstFree->next;
-		}
+			firstUsed = next;
 		else
-			el->next = nullptr;
-		firstFree = el;
+			lookingForUsed = true;
+
+		ListElement *prevEl = el;
+		while (--prevEl >= array && (lookingForUsed || lookingForFree))
+		{
+			if (lookingForUsed && prevEl->used)
+			{
+				prevEl->next = next;
+				lookingForUsed = false;
+			}
+			if (lookingForFree && !prevEl->used)
+			{
+				el->next = prevEl->next;
+				prevEl->next = el;
+				lookingForFree = false;
+			}
+		}
+
+		if (!!firstFree == lookingForFree)
+		{
+			if (firstFree)
+				el->next = firstFree;
+			else
+				el->next = nullptr;
+			firstFree = el;
+		}
 	}
 
 	template<typename Ti, typename SA = LinkedListSA>
