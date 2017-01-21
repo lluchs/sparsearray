@@ -1,5 +1,5 @@
 CXXFLAGS += -g -Wall
-#CXXFLAGS += -O2
+CXXFLAGS += -O2
 
 sparsearray: main.cpp sparsearray.h
 	g++ $(CXXFLAGS) $< -o $@

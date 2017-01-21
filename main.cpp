@@ -58,7 +58,7 @@ int benchmark(int iterations, uint64_t seed)
 
 int main()
 {
-	const int iterations = 10000;
+	const int iterations = 100000;
 	const size_t list_size = 10000;
 	const uint64_t seed = 199897253124;
 
