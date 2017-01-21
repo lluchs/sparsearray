@@ -71,7 +71,7 @@ int main()
 	sum = benchmark<BitmapSA<C4PXS, list_size>>(iterations, seed);
 	end = std::chrono::high_resolution_clock::now();
 	elapsed_seconds = end - start;
-	std::cout << "end BitmapSA = " << std::chrono::duration_cast<std::chrono::microseconds>(elapsed_seconds).count() << " μs" << std::endl;
+	std::cout << "end = " << std::chrono::duration_cast<std::chrono::microseconds>(elapsed_seconds).count() << " μs" << std::endl;
 	std::cout << "sum = " << sum << std::endl << std::endl;
 
 	std::cout << "start ChunkSA" << std::endl;
@@ -79,7 +79,7 @@ int main()
 	sum = benchmark<ChunkSA<C4PXS, list_size>>(iterations, seed);
 	end = std::chrono::high_resolution_clock::now();
 	elapsed_seconds = end - start;
-	std::cout << "end ChunkSA = " << std::chrono::duration_cast<std::chrono::microseconds>(elapsed_seconds).count() << " μs" << std::endl;
+	std::cout << "end = " << std::chrono::duration_cast<std::chrono::microseconds>(elapsed_seconds).count() << " μs" << std::endl;
 	std::cout << "sum = " << sum << std::endl << std::endl;
 
 	std::cout << "start LinkedListSA" << std::endl;
@@ -87,7 +87,7 @@ int main()
 	sum = benchmark<LinkedListSA<C4PXS, list_size>>(iterations, seed);
 	end = std::chrono::high_resolution_clock::now();
 	elapsed_seconds = end - start;
-	std::cout << "end LinkedListSA = " << std::chrono::duration_cast<std::chrono::microseconds>(elapsed_seconds).count() << " μs" << std::endl;
+	std::cout << "end = " << std::chrono::duration_cast<std::chrono::microseconds>(elapsed_seconds).count() << " μs" << std::endl;
 	std::cout << "sum = " << sum << std::endl << std::endl;
 
 	return 0;
