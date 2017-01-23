@@ -83,6 +83,7 @@ int main()
 	run_benchmark<ChunkSA<C4PXS, list_size>>("ChunkSA");
 	run_benchmark<LinkedListSA<C4PXS, list_size>>("LinkedListSA");
 	run_benchmark<DoubleLinkedListSA<C4PXS, list_size>>("DoubleLinkedListSA");
+	run_benchmark<UnorderedLinkedListSA<C4PXS, list_size>>("UnorderedLinkedListSA");
 
 	return 0;
 }

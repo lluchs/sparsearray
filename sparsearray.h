@@ -333,6 +333,99 @@ done:
 };
 
 template<typename T, size_t N>
+class UnorderedLinkedListSA
+{
+protected: // for tests
+	struct ListElement
+	{
+		T data;
+		ListElement *next;
+		bool used = false;
+	};
+	// We need this to be able to cast a T* to a ListElement*.
+	static_assert(std::is_standard_layout<ListElement>::value);
+
+	ListElement array[N];
+	ListElement *firstUsed, *firstFree;
+	
+	/*void PrintList(ListElement *start)
+	{
+		for (auto it = start; it; it = it->next)
+			printf("%d -> ", it->data);
+		printf("nullptr\n");
+	}*/
+
+public:
+	UnorderedLinkedListSA() : firstUsed(nullptr), firstFree(array)
+	{
+		// Everything starts in the free list.
+		for (size_t i = 1; i < N; i++)
+			array[i-1].next = &array[i];
+		array[N-1].next = nullptr;
+	}
+
+	T* New()
+	{
+		if (!firstFree) return nullptr;
+		ListElement *el = firstFree;
+		firstFree = el->next;
+		el->used = true;
+		// Instead of keeping order, we just prepend the new element to the list.
+		el->next = firstUsed;
+		firstUsed = el;
+		return &el->data;
+	}
+
+	void Delete(T *dataEl)
+	{
+		ListElement *el = reinterpret_cast<ListElement*>(dataEl);
+		assert(el >= &array[0] && el < &array[N]);
+		assert(el->used);
+		el->used = false;
+
+		ListElement *next = el->next;
+		if (el == firstUsed)
+			firstUsed = next;
+		else
+		{
+			for (ListElement *prevEl = firstUsed; prevEl; prevEl = prevEl->next)
+				if (prevEl->next == el)
+				{
+					prevEl->next = next;
+					break;
+				}
+		}
+		el->next = firstFree;
+		firstFree = el;
+	}
+
+	template<typename Ti, typename SA = UnorderedLinkedListSA>
+	class Iterator : public std::iterator<std::forward_iterator_tag, Ti>
+	{
+		// We need to save the next element explicitly to allow deletion during iteration.
+		ListElement *el, *next;
+	public:
+		Iterator(SA *array) : el(array ? array->firstUsed : nullptr), next(el ? el->next : nullptr) { }
+
+		Iterator& operator++()
+		{
+			el = next;
+			next = el ? el->next : nullptr;
+			return *this;
+		}
+
+		bool operator==(Iterator other) { return el == other.el; }
+		bool operator!=(Iterator other) { return !(*this == other); }
+		Ti& operator*() const { return el->data; }
+	};
+
+	Iterator<T> begin() { return Iterator<T>(this); }
+	Iterator<T> end() { return Iterator<T>(nullptr); }
+	Iterator<const T, const UnorderedLinkedListSA> begin() const { return Iterator<const T, const UnorderedLinkedListSA>(this); }
+	Iterator<const T, const UnorderedLinkedListSA> end() const { return Iterator<const T, const UnorderedLinkedListSA>(nullptr); }
+};
+
+template<typename T, size_t N>
 class DoubleLinkedListSA
 {
 protected: // for tests
