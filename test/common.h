@@ -54,6 +54,7 @@ SECTION("filling should work")
 		for (int el : array)
 		{
 			CHECK(el == i++);
+			REQUIRE(i <= N);
 		}
 	}
 }

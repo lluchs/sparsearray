@@ -331,3 +331,130 @@ done:
 	Iterator<const T, const LinkedListSA> begin() const { return Iterator<const T, const LinkedListSA>(this); }
 	Iterator<const T, const LinkedListSA> end() const { return Iterator<const T, const LinkedListSA>(nullptr); }
 };
+
+template<typename T, size_t N>
+class DoubleLinkedListSA
+{
+protected: // for tests
+	struct ListElement
+	{
+		T data;
+		// prev is only valid while the element is used.
+		ListElement *next, *prev;
+		bool used = false;
+	};
+	// We need this to be able to cast a T* to a ListElement*.
+	static_assert(std::is_standard_layout<ListElement>::value);
+
+	ListElement array[N];
+	ListElement *firstUsed, *firstFree;
+	
+	/*void PrintList(ListElement *start)
+	{
+		for (auto it = start; it; it = it->next)
+			printf("%d -> ", it->data);
+		printf("nullptr\n");
+	}*/
+
+public:
+	DoubleLinkedListSA() : firstUsed(nullptr), firstFree(array)
+	{
+		// Everything starts in the free list.
+		for (size_t i = 1; i < N; i++)
+			array[i-1].next = &array[i];
+		array[N-1].next = nullptr;
+	}
+
+	T* New()
+	{
+		if (!firstFree) return nullptr;
+		ListElement *el = firstFree;
+		firstFree = el->next;
+		el->used = true;
+
+		// The hard part is now to insert the element in the right place in the list. We could just
+		// put it in the front, but this would destroy cache locality during iteration.
+		if (firstUsed)
+		{
+			ListElement *prevEl = el;
+			while (--prevEl >= array)
+				if (prevEl->used)
+				{
+					el->next = prevEl->next;
+					el->prev = prevEl;
+					prevEl->next = el;
+					if (el->next)
+						el->next->prev = el;
+					goto done;
+				}
+			// We're at the front.
+			el->next = firstUsed;
+			el->next->prev = el;
+		}
+		else
+			el->next = nullptr;
+		firstUsed = el;
+		el->prev = nullptr;
+done:
+		return &el->data;
+	}
+
+	void Delete(T *dataEl)
+	{
+		ListElement *el = reinterpret_cast<ListElement*>(dataEl);
+		assert(el >= &array[0] && el < &array[N]);
+		assert(el->used);
+		el->used = false;
+
+		ListElement *next = el->next;
+		if (el == firstUsed)
+			firstUsed = next;
+		if (next)
+			next->prev = el->prev;
+		if (el->prev)
+			el->prev->next = next;
+
+		if (firstFree)
+		{
+			ListElement *prevEl = el;
+			while (--prevEl >= array)
+			{
+				if (!prevEl->used)
+				{
+					el->next = prevEl->next;
+					prevEl->next = el;
+					return;
+				}
+			}
+			el->next = firstFree;
+		}
+		else
+			el->next = nullptr;
+		firstFree = el;
+	}
+
+	template<typename Ti, typename SA = DoubleLinkedListSA>
+	class Iterator : public std::iterator<std::forward_iterator_tag, Ti>
+	{
+		// We need to save the next element explicitly to allow deletion during iteration.
+		ListElement *el, *next;
+	public:
+		Iterator(SA *array) : el(array ? array->firstUsed : nullptr), next(el ? el->next : nullptr) { }
+
+		Iterator& operator++()
+		{
+			el = next;
+			next = el ? el->next : nullptr;
+			return *this;
+		}
+
+		bool operator==(Iterator other) { return el == other.el; }
+		bool operator!=(Iterator other) { return !(*this == other); }
+		Ti& operator*() const { return el->data; }
+	};
+
+	Iterator<T> begin() { return Iterator<T>(this); }
+	Iterator<T> end() { return Iterator<T>(nullptr); }
+	Iterator<const T, const DoubleLinkedListSA> begin() const { return Iterator<const T, const DoubleLinkedListSA>(this); }
+	Iterator<const T, const DoubleLinkedListSA> end() const { return Iterator<const T, const DoubleLinkedListSA>(nullptr); }
+};
