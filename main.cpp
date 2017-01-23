@@ -56,39 +56,32 @@ int benchmark(int iterations, uint64_t seed)
 	return sum;
 }
 
-int main()
+template<typename SparseArray>
+static void run_benchmark(const char *name)
 {
 	const int iterations = 100000;
-	const size_t list_size = 10000;
 	const uint64_t seed = 199897253124;
 
 	std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
 	std::chrono::duration<double> elapsed_seconds;
 	int sum;
 
-	std::cout << "start BitmapSA" << std::endl;
+	std::cout << "start " << name << std::endl;
 	start = std::chrono::high_resolution_clock::now();
-	sum = benchmark<BitmapSA<C4PXS, list_size>>(iterations, seed);
+	sum = benchmark<SparseArray>(iterations, seed);
 	end = std::chrono::high_resolution_clock::now();
 	elapsed_seconds = end - start;
 	std::cout << "end = " << std::chrono::duration_cast<std::chrono::microseconds>(elapsed_seconds).count() << " μs" << std::endl;
 	std::cout << "sum = " << sum << std::endl << std::endl;
+}
 
-	std::cout << "start ChunkSA" << std::endl;
-	start = std::chrono::high_resolution_clock::now();
-	sum = benchmark<ChunkSA<C4PXS, list_size>>(iterations, seed);
-	end = std::chrono::high_resolution_clock::now();
-	elapsed_seconds = end - start;
-	std::cout << "end = " << std::chrono::duration_cast<std::chrono::microseconds>(elapsed_seconds).count() << " μs" << std::endl;
-	std::cout << "sum = " << sum << std::endl << std::endl;
+int main()
+{
+	const size_t list_size = 10000;
 
-	std::cout << "start LinkedListSA" << std::endl;
-	start = std::chrono::high_resolution_clock::now();
-	sum = benchmark<LinkedListSA<C4PXS, list_size>>(iterations, seed);
-	end = std::chrono::high_resolution_clock::now();
-	elapsed_seconds = end - start;
-	std::cout << "end = " << std::chrono::duration_cast<std::chrono::microseconds>(elapsed_seconds).count() << " μs" << std::endl;
-	std::cout << "sum = " << sum << std::endl << std::endl;
+	run_benchmark<BitmapSA<C4PXS, list_size>>("BitmapSA");
+	run_benchmark<ChunkSA<C4PXS, list_size>>("ChunkSA");
+	run_benchmark<LinkedListSA<C4PXS, list_size>>("LinkedListSA");
 
 	return 0;
 }
