@@ -72,12 +72,15 @@ static void run_benchmark(const char *name)
 	end = std::chrono::high_resolution_clock::now();
 	elapsed_seconds = end - start;
 	std::cout << "end = " << std::chrono::duration_cast<std::chrono::microseconds>(elapsed_seconds).count() << " μs" << std::endl;
+	std::cout << "static size = " << sizeof(SparseArray) << " byte" << std::endl;
 	std::cout << "sum = " << sum << std::endl << std::endl;
 }
 
 int main()
 {
 	const size_t list_size = 10000;
+
+	std::cout << "data size = " << sizeof(C4PXS[list_size]) << " byte" << std::endl << std::endl;
 
 	run_benchmark<BitmapSA<C4PXS, list_size>>("BitmapSA");
 	run_benchmark<ChunkSA<C4PXS, list_size>>("ChunkSA");
