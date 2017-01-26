@@ -84,6 +84,7 @@ int main()
 
 	run_benchmark<BitmapSA<C4PXS, list_size>>("BitmapSA");
 	run_benchmark<ChunkSA<C4PXS, list_size>>("ChunkSA");
+	run_benchmark<StaticChunkSA<C4PXS, list_size>>("StaticChunkSA");
 	run_benchmark<LinkedListSA<C4PXS, list_size>>("LinkedListSA");
 	run_benchmark<LinkedListBitmapSA<C4PXS, list_size>>("LinkedListBitmapSA");
 	run_benchmark<DoubleLinkedListSA<C4PXS, list_size>>("DoubleLinkedListSA");

@@ -205,6 +205,107 @@ public:
 	Iterator<const T, const ChunkSA> end() const { return Iterator<const T, const ChunkSA>(nullptr); }
 };
 
+template<typename T, size_t N, size_t ChunkSize = 500>
+class StaticChunkSA
+{
+	static_assert(N % ChunkSize == 0, "N must be a multiple of ChunkSize");
+	static constexpr size_t MaxChunk = N / ChunkSize;
+	T Chunk[MaxChunk][ChunkSize];
+	size_t ChunkFill[MaxChunk];
+	std::bitset<N> UsedElements;
+
+public:
+
+	StaticChunkSA()
+	{
+		for (size_t i = 0; i < MaxChunk; i++)
+		{
+			ChunkFill[i] = 0;
+		}
+	}
+
+	T* New()
+	{
+		for (size_t i = 0; i < MaxChunk; i++)
+		{
+			// Check this chunk for space.
+			if (ChunkFill[i] < ChunkSize)
+				for (size_t j = 0; j < ChunkSize; j++)
+					if (!UsedElements[i*ChunkSize + j])
+					{
+						UsedElements.set(i*ChunkSize + j);
+						ChunkFill[i]++;
+						return &Chunk[i][j];
+					}
+		}
+		return nullptr;
+	}
+
+	void Delete(T *el)
+	{
+		size_t i, j;
+		for (i = 0; i < MaxChunk; i++)
+			if (ChunkFill[i])
+				if (el >= &Chunk[i][0] && el < &Chunk[i][ChunkSize])
+					break;
+		assert(i < MaxChunk);
+
+		j = el - &Chunk[i][0];
+		assert(UsedElements[i*ChunkSize + j]);
+		UsedElements.reset(i*ChunkSize + j);
+
+		--ChunkFill[i];
+	}
+
+	template<typename Ti, typename SA = StaticChunkSA>
+	class Iterator : public std::iterator<std::forward_iterator_tag, Ti>
+	{
+		SA *array;
+		size_t i, j; // chunk, position in chunk
+
+		Iterator& next(bool return_next)
+		{
+			for (; i < MaxChunk; i++, j = 0)
+			{
+				if (array->ChunkFill[i])
+				{
+					for (; j < ChunkSize; j++)
+					{
+						if (array->UsedElements[i*ChunkSize + j] && return_next)
+							return *this;
+						return_next = true;
+					}
+				}
+				return_next = true;
+			}
+			// We're at the end.
+			array = nullptr;
+			i = j = 0;
+			return *this;
+		}
+	public:
+		Iterator(SA *array) : array(array), i(0), j(0)
+		{
+			if (array)
+				next(true);
+		}
+
+		Iterator& operator++()
+		{
+			return next(false);
+		}
+
+		bool operator==(Iterator other) { return array == other.array && i == other.i && j == other.j; }
+		bool operator!=(Iterator other) { return !(*this == other); }
+		Ti& operator*() const { return array->Chunk[i][j]; }
+	};
+
+	Iterator<T> begin() { return Iterator<T>(this); }
+	Iterator<T> end() { return Iterator<T>(nullptr); }
+	Iterator<const T, const StaticChunkSA> begin() const { return Iterator<const T, const StaticChunkSA>(this); }
+	Iterator<const T, const StaticChunkSA> end() const { return Iterator<const T, const StaticChunkSA>(nullptr); }
+};
+
 template<typename T, size_t N>
 class LinkedListSA
 {
