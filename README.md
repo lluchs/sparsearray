@@ -14,12 +14,12 @@ instead of O(1) for an unsorted (double) linked-list implementation).
 
 A data structure like this is used for OpenClonk's [PXS][1] which are “tiny bits of moving
 material”. Iteration happens twice per frame for simulation and drawing. PXS are created mainly for
-waterfalls and rain. Deletion usally happens when the PXS hit something and settle. Thus, there is
-no predicatble lifetime.
+waterfalls and rain. Deletion usually happens when the PXS hit something and settle. Thus, there is
+no predictable lifetime.
 
 [1]: https://github.com/openclonk/openclonk/blob/master/src/landscape/C4PXS.h
 
-## Implemenations
+## Implementations
 
 The following describes all implementation variants which are located in `sparsearray.h`.
 
