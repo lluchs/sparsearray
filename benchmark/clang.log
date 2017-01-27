@@ -1,0 +1,37 @@
+data size = 200000 byte
+
+start BitmapSA
+end = 3089841 μs
+static size = 201256 byte
+sum = 16058090
+
+start ChunkSA
+end = 3070589 μs
+static size = 1576 byte
+sum = 16058090
+
+start StaticChunkSA
+end = 3207569 μs
+static size = 201416 byte
+sum = 16058090
+
+start LinkedListSA
+end = 2415003 μs
+static size = 400016 byte
+sum = 16058090
+
+start LinkedListBitmapSA
+end = 2383898 μs
+static size = 321272 byte
+sum = 16058090
+
+start DoubleLinkedListSA
+end = 2442948 μs
+static size = 480016 byte
+sum = 16058090
+
+start UnorderedLinkedListSA
+end = 27318397 μs
+static size = 400016 byte
+sum = 16058090
+

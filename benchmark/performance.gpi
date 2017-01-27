@@ -1,0 +1,23 @@
+#!/usr/bin/gnuplot
+
+set terminal svg fname "sans-serif"
+
+set style data histogram
+set style fill solid
+
+set colorsequence podo
+set key left top
+set xtics rotate by -45
+set ylabel "seconds for 100000 iterations"
+set grid ytics
+
+set output "performance-all.svg"
+plot "< ./performance.awk gcc.log" using 2:xticlabels(1) title "gcc", \
+     "< ./performance.awk clang.log" using 2:xticlabels(1) title "clang"
+
+set key right top
+set yrange [0:*]
+
+set output "performance.svg"
+plot "< ./performance.awk gcc.log | grep -v Unordered" using 2:xticlabels(1) title "gcc", \
+     "< ./performance.awk clang.log | grep -v Unordered" using 2:xticlabels(1) title "clang"

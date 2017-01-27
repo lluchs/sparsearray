@@ -1,0 +1,15 @@
+#!/usr/bin/gnuplot
+
+set terminal svg fname "sans-serif"
+
+set style data histogram
+set style fill solid
+
+set colorsequence podo
+unset key
+set xtics rotate by -45
+set ylabel "memory usage relative to plain array"
+set grid ytics
+
+set output "memoverhead.svg"
+plot "< ./memoverhead.awk gcc.log" using 2:xticlabels(1)
