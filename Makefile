@@ -1,11 +1,11 @@
-CXXFLAGS += -g -Wall
+CXXFLAGS += -g -Wall -std=c++14
 CXXFLAGS += -O2
 
 sparsearray: main.cpp sparsearray.h
-	g++ $(CXXFLAGS) $< -o $@
+	$(CXX) $(CXXFLAGS) $< -o $@
 
 runtest: test/main.o test/linkedlistbitmapsa.o test/linkedlistsa.o test/doublelinkedlistsa.o test/bitmapsa.o test/chunksa.o
-	g++ $(CXXFLAGS) $(filter %.o,$^) -o $@
+	$(CXX) $(CXXFLAGS) $(filter %.o,$^) -o $@
 
 test: runtest
 	./runtest
