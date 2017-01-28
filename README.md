@@ -70,15 +70,19 @@ the previous element's `next` pointer.
 
 ## Evaluation
 
-The test program (in `main.cpp`) is a simplified PXS simulation. Each iteration adds up to ten PXS
-with random velocities. The simulation removes PXS which travelled a maximum distance.
+The test program (in `main.cpp`) is a simplified PXS simulation. It periodically (high load: each
+iteration, low load: every 50 iterations) adds up to ten PXS with random velocities. The simulation
+removes PXS which travelled a maximum distance.
 
 The Arch Linux test system has an Intel i7-6700 (Skylake) CPU running at 4.00 GHz.
 
-### Performance
+### Performance with high load
 
-![Figure 1](benchmark/performance-all.svg "Figure 1: Performance benchmark results")
-![Figure 2](benchmark/performance.svg "Figure 2: Performance benchmark detail")
+![Figure 1](https://rawgit.com/lluchs/sparsearray/master/benchmark/performance-all.svg "Figure 1: Performance benchmark results")
+![Figure 2](https://rawgit.com/lluchs/sparsearray/master/benchmark/performance.svg "Figure 2: Performance benchmark detail")
+
+For this benchmark, the array is almost completely full all the time. Consequently, adding new
+elements is very expensive for all implementations.
 
 Figure 1 shows the complete benchmark results. It is immediately obvious that UnorderedLinkedListSA
 is not competitive at all and that good cache locality is important.
@@ -102,11 +106,21 @@ The *LinkedList* implementations are generally faster than *ChunkSA*. With Clang
 have roughly the same speed. On the other hand, GCC produces faster code for *LinkedListSA*, but
 significantly slower code for *LinkedListBitmapSA*
 
+### Performance with low load
+
+![Figure 3](https://rawgit.com/lluchs/sparsearray/master/benchmark/performance-lowload.svg "Figure 3: Performance benchmark results with low load")
+
+In this benchmark, new elements are only added for each 50th iteration. Consequently, the array
+never fills up completely. In the end, the array holds 187 elements.
+
+Figure 3 show the benchmark results. *ChunkSA* is still the slowest implementation. However,
+*LinkedListSA* is significantly faster than *BitmapSA*.
+
 ### Memory Overhead
 
-![Figure 3](benchmark/memoverhead.svg "Figure 3: Memory usage relative to array size")
+![Figure 4](https://rawgit.com/lluchs/sparsearray/master/benchmark/memoverhead.svg "Figure 4: Memory usage relative to array size")
 
-Figure 3 shows the memory overhead relative to a plain array of 10000 elements (200000 byte). It
+Figure 4 shows the memory overhead relative to a plain array of 10000 elements (200000 byte). It
 does not include the dynamically allocating *ChunkSA*, however peak memory usage should be identical
 to *StaticChunkSA*.
 
