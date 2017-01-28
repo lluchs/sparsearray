@@ -2,6 +2,9 @@
 #include <chrono>
 #include <cassert>
 #include <cmath>
+#include <cstdlib>
+
+#include <unistd.h>
 
 #include "sparsearray.h"
 
@@ -18,7 +21,7 @@ public:
 };
 
 template<typename SparseArray>
-int benchmark(int iterations, uint64_t seed)
+int benchmark(int iterations, uint64_t seed, int addmod)
 {
 	uint64_t r = seed;
 	auto rand = [&r]() { return r = r * 6364136223846793005 + 1442695040888963407; };
@@ -28,17 +31,18 @@ int benchmark(int iterations, uint64_t seed)
 	for (int i = 0; i < iterations; i++)
 	{
 		// Add new PXS periodically.
-		for (int j = 0; j < 10; j++)
-		{
-			auto npxs = array.New();
-			if (npxs)
+		if (i % addmod == 0)
+			for (int j = 0; j < 10; j++)
 			{
-				npxs->Mat = 1;
-				npxs->x = 0; npxs->y = 0;
-				npxs->xdir = (int) (rand() % 100) - 50;
-				npxs->ydir = (int) (rand() % 100) - 50;
+				auto npxs = array.New();
+				if (npxs)
+				{
+					npxs->Mat = 1;
+					npxs->x = 0; npxs->y = 0;
+					npxs->xdir = (int) (rand() % 100) - 50;
+					npxs->ydir = (int) (rand() % 100) - 50;
+				}
 			}
-		}
 		// walk through the array and do stuff
 		for (auto& pxs : array)
 		{
@@ -56,19 +60,21 @@ int benchmark(int iterations, uint64_t seed)
 	return sum;
 }
 
+// Options
+static int iterations = 100000;
+static uint64_t seed = 199897253124;
+static int addmod = 1;
+
 template<typename SparseArray>
 static void run_benchmark(const char *name)
 {
-	const int iterations = 100000;
-	const uint64_t seed = 199897253124;
-
 	std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
 	std::chrono::duration<double> elapsed_seconds;
 	int sum;
 
 	std::cout << "start " << name << std::endl;
 	start = std::chrono::high_resolution_clock::now();
-	sum = benchmark<SparseArray>(iterations, seed);
+	sum = benchmark<SparseArray>(iterations, seed, addmod);
 	end = std::chrono::high_resolution_clock::now();
 	elapsed_seconds = end - start;
 	std::cout << "end = " << std::chrono::duration_cast<std::chrono::microseconds>(elapsed_seconds).count() << " μs" << std::endl;
@@ -76,10 +82,25 @@ static void run_benchmark(const char *name)
 	std::cout << "sum = " << sum << std::endl << std::endl;
 }
 
-int main()
+int main(int argc, char **argv)
 {
 	const size_t list_size = 10000;
 
+	int opt;
+	while ((opt = getopt(argc, argv, "l:i:s:a:")) != -1)
+	{
+		switch (opt)
+		{
+		// No error handling. Don't pass invalid values.
+		case 'i': iterations = std::atoi(optarg); break;
+		case 's': seed = std::strtoull(optarg, nullptr, 10); break;
+		case 'a': addmod = std::atoi(optarg); break;
+		default: std::cerr << "Invalid option " << (char) opt << std::endl;
+		}
+	}
+	std::cout << "iterations = " << std::to_string(iterations) << std::endl;
+	std::cout << "seed = " << std::to_string(seed) << std::endl;
+	std::cout << "addmod = " << std::to_string(addmod) << std::endl;
 	std::cout << "data size = " << sizeof(C4PXS[list_size]) << " byte" << std::endl << std::endl;
 
 	run_benchmark<BitmapSA<C4PXS, list_size>>("BitmapSA");
