@@ -21,3 +21,9 @@ set yrange [0:*]
 set output "performance.svg"
 plot "< ./performance.awk gcc.log | grep -v Unordered" using 2:xticlabels(1) title "gcc", \
      "< ./performance.awk clang.log | grep -v Unordered" using 2:xticlabels(1) title "clang"
+
+set ylabel "seconds for 1000000 iterations"
+
+set output "performance-lowload.svg"
+plot "< ./performance.awk lowload-gcc.log" using 2:xticlabels(1) title "gcc", \
+     "< ./performance.awk lowload-clang.log" using 2:xticlabels(1) title "clang"

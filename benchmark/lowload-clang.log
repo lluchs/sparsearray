@@ -1,0 +1,47 @@
+iterations = 1000000
+seed = 199897253124
+addmod = 50
+data size = 200000 byte
+
+start BitmapSA
+end = 749857 μs
+static size = 201256 byte
+count = 187
+sum = 191100
+
+start ChunkSA
+end = 922061 μs
+static size = 1576 byte
+count = 187
+sum = 191100
+
+start StaticChunkSA
+end = 941326 μs
+static size = 201416 byte
+count = 187
+sum = 191100
+
+start LinkedListSA
+end = 290906 μs
+static size = 400016 byte
+count = 187
+sum = 191100
+
+start LinkedListBitmapSA
+end = 264594 μs
+static size = 321272 byte
+count = 187
+sum = 191100
+
+start DoubleLinkedListSA
+end = 257941 μs
+static size = 480016 byte
+count = 187
+sum = 191100
+
+start UnorderedLinkedListSA
+end = 276386 μs
+static size = 400016 byte
+count = 187
+sum = 191100
+
