@@ -20,13 +20,19 @@ public:
 	int x,y,xdir,ydir;
 };
 
+struct BenchmarkResult
+{
+	int count;
+	int sum;
+};
+
 template<typename SparseArray>
-int benchmark(int iterations, uint64_t seed, int addmod)
+BenchmarkResult benchmark(int iterations, uint64_t seed, int addmod)
 {
 	uint64_t r = seed;
 	auto rand = [&r]() { return r = r * 6364136223846793005 + 1442695040888963407; };
 	SparseArray array;
-	int sum = 0;
+	BenchmarkResult result = {0};
 
 	for (int i = 0; i < iterations; i++)
 	{
@@ -56,8 +62,11 @@ int benchmark(int iterations, uint64_t seed, int addmod)
 	}
 
 	for (auto& pxs : array)
-		sum += pxs.x + pxs.y;
-	return sum;
+	{
+		result.count++;
+		result.sum += pxs.x + pxs.y;
+	}
+	return result;
 }
 
 // Options
@@ -70,16 +79,16 @@ static void run_benchmark(const char *name)
 {
 	std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
 	std::chrono::duration<double> elapsed_seconds;
-	int sum;
 
 	std::cout << "start " << name << std::endl;
 	start = std::chrono::high_resolution_clock::now();
-	sum = benchmark<SparseArray>(iterations, seed, addmod);
+	auto r = benchmark<SparseArray>(iterations, seed, addmod);
 	end = std::chrono::high_resolution_clock::now();
 	elapsed_seconds = end - start;
 	std::cout << "end = " << std::chrono::duration_cast<std::chrono::microseconds>(elapsed_seconds).count() << " μs" << std::endl;
 	std::cout << "static size = " << sizeof(SparseArray) << " byte" << std::endl;
-	std::cout << "sum = " << sum << std::endl << std::endl;
+	std::cout << "count = " << r.count << std::endl;
+	std::cout << "sum = " << r.sum << std::endl << std::endl;
 }
 
 int main(int argc, char **argv)
