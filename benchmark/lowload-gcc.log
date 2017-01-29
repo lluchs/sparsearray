@@ -4,44 +4,50 @@ addmod = 50
 data size = 200000 byte
 
 start BitmapSA
-end = 498131 μs
+end = 496930 μs
 static size = 201256 byte
 count = 187
 sum = 191100
 
 start ChunkSA
-end = 929828 μs
+end = 942168 μs
 static size = 1576 byte
 count = 187
 sum = 191100
 
 start StaticChunkSA
-end = 911150 μs
+end = 936942 μs
 static size = 201416 byte
 count = 187
 sum = 191100
 
 start LinkedListSA
-end = 227883 μs
+end = 235540 μs
 static size = 400016 byte
 count = 187
 sum = 191100
 
 start LinkedListBitmapSA
-end = 238602 μs
+end = 243948 μs
 static size = 321272 byte
 count = 187
 sum = 191100
 
 start DoubleLinkedListSA
-end = 229122 μs
+end = 236450 μs
 static size = 480016 byte
 count = 187
 sum = 191100
 
 start UnorderedLinkedListSA
-end = 246627 μs
+end = 255103 μs
 static size = 400016 byte
+count = 187
+sum = 191100
+
+start ReorderingSA
+end = 264380 μs
+static size = 200008 byte
 count = 187
 sum = 191100
 

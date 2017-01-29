@@ -67,6 +67,13 @@ efficient.
 for good performance. Its `New` method is in O(1), but `Delete` has to traverse the list to update
 the previous element's `next` pointer.
 
+### ReorderingSA
+
+*ReorderingSA* always keeps the used elements in continuous memory. On deletion, it moves the last
+used element in the now-free spot. This has several advantages: iteration never has to skip holes,
+and both insertion and deletion is in constant time. However, any pointers are invalidated when an
+element is deleted.
+
 
 ## Evaluation
 
@@ -91,12 +98,12 @@ Figure 2 only shows the faster implementations. An interesting result is that pe
 lot on the compiler. GCC produces the best results overall, but is slower for some of the
 benchmarks.
 
-*BitmapSA* has the largest difference between the two compilers. With GCC, it performs best overall,
-but is among the slowest with Clang. The difference is most likely due to the choice in “find first
-set” instructions. As mentioned above, GCC uses the `tzcnt` instruction while Clang uses `bsf`.
-While only Haswell or newer CPUs support `tzcnt`, it decodes to `bsf` on older CPUs. A bit of
-googling suggests that `tzcnt` is indeed faster than `bsf` on CPUs that support the newer
-instruction, although I did not find any benchmarks.
+*BitmapSA* has the largest difference between the two compilers. With GCC, it performs best among
+the non-reordering implementations, but is one of the slowest with Clang. The difference is most
+likely due to the choice in “find first set” instructions. As mentioned above, GCC uses the `tzcnt`
+instruction while Clang uses `bsf`.  While only Haswell or newer CPUs support `tzcnt`, it decodes to
+`bsf` on older CPUs. A bit of googling suggests that `tzcnt` is indeed faster than `bsf` on CPUs
+that support the newer instruction, although I did not find any benchmarks.
 
 *ChunkSA* and *StaticChunkSA* are the slowest implementations. Interestingly, *StaticChunkSA* is
 actually a bit slower even though it does not do dynamic allocation. As the benchmark is constantly
@@ -106,6 +113,9 @@ The *LinkedList* implementations are generally faster than *ChunkSA*. With Clang
 have roughly the same speed. On the other hand, GCC produces faster code for *LinkedListSA*, but
 significantly slower code for *LinkedListBitmapSA*
 
+Unsurprisingly, *ReorderingSA* is the fastest implementation overall, as it never has to scan the
+array for insertion or deletion.
+
 ### Performance with low load
 
 ![Figure 3](https://rawgit.com/lluchs/sparsearray/master/benchmark/performance-lowload.svg "Figure 3: Performance benchmark results with low load")
@@ -114,7 +124,8 @@ In this benchmark, new elements are only added for each 50th iteration. Conseque
 never fills up completely. In the end, the array holds 187 elements.
 
 Figure 3 show the benchmark results. *ChunkSA* is still the slowest implementation. However,
-*LinkedListSA* is significantly faster than *BitmapSA*.
+*LinkedListSA* is significantly faster than *BitmapSA*. Additionally, the cost of moving elements in
+*ReorderingSA* shows in this benchmark. It is slower than *LinkedListSA* for both GCC and Clang.
 
 ### Memory Overhead
 
