@@ -779,3 +779,59 @@ done:
 	Iterator<const T, const DoubleLinkedListSA> begin() const { return Iterator<const T, const DoubleLinkedListSA>(this); }
 	Iterator<const T, const DoubleLinkedListSA> end() const { return Iterator<const T, const DoubleLinkedListSA>(nullptr); }
 };
+
+template<typename T, size_t N>
+class ReorderingSA
+{
+	T data[N];
+	T *firstFree = data;
+
+public:
+	T* New()
+	{
+		if (firstFree < data + N)
+			return firstFree++;
+		return nullptr;
+	}
+
+	void Delete(T *el)
+	{
+		assert(el >= data && el < firstFree);
+		auto lastUsed = firstFree - 1;
+		if (el != lastUsed)
+			*el = std::move(*lastUsed);
+		firstFree--;
+	}
+
+	template<typename Ti, typename SA = ReorderingSA>
+	class Iterator : public std::iterator<std::forward_iterator_tag, Ti>
+	{
+		SA *array;
+		Ti *el, *firstFree;
+	public:
+		Iterator(SA *array) : array(array), el(array ? array->data : nullptr), firstFree(array ? array->firstFree : nullptr)
+		{
+		}
+
+		Iterator& operator++()
+		{
+			// When el is deleted, the next element is the same element.
+			if (firstFree != array->firstFree)
+				firstFree = array->firstFree;
+			else
+				el++;
+			if (el >= firstFree)
+				el = nullptr;
+			return *this;
+		}
+
+		bool operator==(Iterator other) { return el == other.el; }
+		bool operator!=(Iterator other) { return !(*this == other); }
+		Ti& operator*() const { return *el; }
+	};
+
+	Iterator<T> begin() { return Iterator<T>(this); }
+	Iterator<T> end() { return Iterator<T>(nullptr); }
+	Iterator<const T, const ReorderingSA> begin() const { return Iterator<const T, const ReorderingSA>(this); }
+	Iterator<const T, const ReorderingSA> end() const { return Iterator<const T, const ReorderingSA>(nullptr); }
+};

@@ -119,6 +119,7 @@ int main(int argc, char **argv)
 	run_benchmark<LinkedListBitmapSA<C4PXS, list_size>>("LinkedListBitmapSA");
 	run_benchmark<DoubleLinkedListSA<C4PXS, list_size>>("DoubleLinkedListSA");
 	run_benchmark<UnorderedLinkedListSA<C4PXS, list_size>>("UnorderedLinkedListSA");
+	run_benchmark<ReorderingSA<C4PXS, list_size>>("ReorderingSA");
 
 	return 0;
 }
